@@ -22,32 +22,29 @@ class AuthController extends Controller
 
 
     public function register(Request $request)
-    {
+{
+    $request->validate([
+        'first_name' => 'required|min:3|max:25',
+        'last_name' => 'required|max:4',
+        'email' => 'required|email:rfc,dns|unique:users,email',
+        'date_of_birth' => 'required',
+    ]);
 
-        $request->validate([
-            'first_name' => 'required',
-            'last_name' => 'required',
-            'email' => 'required|email',
-            'date_of_birth' => 'required',
-           
-        ]);
+    $randomPassword = $this->generateRandomPassword(5);
 
-        $randomPassword = $this->generateRandomPassword(4);
-        
-        $user = User::create([
-            'first_name' => $request->input('first_name'),
-            'last_name' => $request->input('last_name'),
-            'email' => $request->input('email'),
-            'date_of_birth' => $request->input('date_of_birth'),
-            'password' => Hash::make($request->input('password'))
-        ]);
+    $user = User::create([
+        'name' => $request->input('first_name') . ' ' . $request->input('last_name'),
+        'email' => $request->input('email'),
+        'date_of_birth' => $request->input('date_of_birth'),
+        'password' => Hash::make($randomPassword), 
+    ]);
 
-        Mail::to($user->email)->send(new \App\Mail\SendPasswordMail($randomPassword));
+    Mail::to($user->email)->send(new \App\Mail\SendPasswordMail($randomPassword));
 
-        $token = JWTAuth::fromUser($user);
+    $token = JWTAuth::fromUser($user);
 
-        return redirect()->route('login');
-        }
+    return redirect()->route('login');
+}
 
 
     private function generateRandomPassword($length = 5)
@@ -64,29 +61,18 @@ class AuthController extends Controller
 
 
 
-
     public function login(Request $request)
     {
         $request->validate([
             'email' => 'required|email',
-            'password' => [
-                'required',
-                'string',
-                'min:5',
-                'regex:/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/',
-                'confirmed'
-            ],
+            'password' => 'required|string',
         ]);
-
 
         if (!$token = JWTAuth::attempt($request->only('email', 'password'))) {
             return back()->withErrors([
                 'password' => 'The provided credentials do not match our records.',
             ]);
         }
-
-
-
 
         $user = JWTAuth::user();
 
@@ -104,10 +90,6 @@ class AuthController extends Controller
 
 
 
-
-
-
-    //---
 
     public function showChangePasswordForm()
     {

@@ -16,7 +16,6 @@ Route::view('login', 'auth.login')->middleware('guest')->name('login');
 Route::post('/login', [AuthController::class, 'login'])->middleware('guest')->name('loginsubmit');
 
 
-
 Route::get('/change-password', [AuthController::class, 'showChangePasswordForm'])->name('change_password.form');
 Route::post('/change-password', [AuthController::class, 'changePassword'])->name('change_password');
 Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
