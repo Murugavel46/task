@@ -22,29 +22,24 @@ class AuthController extends Controller
 
 
     public function register(Request $request)
-{
-    $request->validate([
-        'first_name' => 'required|min:3|max:25',
-        'last_name' => 'required|max:4',
-        'email' => 'required|email:rfc,dns|unique:users,email',
-        'date_of_birth' => 'required',
-    ]);
+    {
+        $request->validate(config('validation.register'));
 
-    $randomPassword = $this->generateRandomPassword(5);
+        $randomPassword = $this->generateRandomPassword(5);
 
-    $user = User::create([
-        'name' => $request->input('first_name') . ' ' . $request->input('last_name'),
-        'email' => $request->input('email'),
-        'date_of_birth' => $request->input('date_of_birth'),
-        'password' => Hash::make($randomPassword), 
-    ]);
+        $user = User::create([
+            'name' => $request->input('first_name') . ' ' . $request->input('last_name'),
+            'email' => $request->input('email'),
+            'date_of_birth' => $request->input('date_of_birth'),
+            'password' => Hash::make($randomPassword),
+        ]);
 
-    Mail::to($user->email)->send(new \App\Mail\SendPasswordMail($randomPassword));
+        Mail::to($user->email)->send(new \App\Mail\SendPasswordMail($randomPassword));
 
-    $token = JWTAuth::fromUser($user);
+        $token = JWTAuth::fromUser($user);
 
-    return redirect()->route('login');
-}
+        return redirect()->route('login');
+    }
 
 
     private function generateRandomPassword($length = 5)
@@ -63,10 +58,7 @@ class AuthController extends Controller
 
     public function login(Request $request)
     {
-        $request->validate([
-            'email' => 'required|email',
-            'password' => 'required|string',
-        ]);
+        $request->validate(config('validation.login'));
 
         if (!$token = JWTAuth::attempt($request->only('email', 'password'))) {
             return back()->withErrors([
@@ -74,11 +66,12 @@ class AuthController extends Controller
             ]);
         }
 
+
         $user = JWTAuth::user();
 
+        Auth::login($user);
 
         session(['auth_token' => $token]);
-
 
         if (!$user->password_changed) {
             return redirect()->route('change_password.form');
@@ -86,8 +79,6 @@ class AuthController extends Controller
 
         return redirect()->route('welcome');
     }
-
-
 
 
 
@@ -158,12 +149,9 @@ class AuthController extends Controller
         $user->password_changed = True;
         $user->save();
 
+        Auth::login($user);
 
-
-
-
-
-        return redirect()->route('login');
+        return redirect()->route('welcome');
     }
 
 
