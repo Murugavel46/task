@@ -8,7 +8,7 @@ Route::get('/', function () {
 });
 
 
-Route::middleware('guest')->group(function () {
+Route::middleware('throttle:30,1','guest')->group(function () {
     Route::view('register', 'auth.register')->name('register');
     Route::post('/register', [AuthController::class, 'register'])->name('register.s');
     Route::view('login', 'auth.login')->name('login');
