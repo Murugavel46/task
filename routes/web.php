@@ -8,17 +8,22 @@ Route::get('/', function () {
 });
 
 
-Route::middleware('throttle:30,1','guest')->group(function () {
+Route::middleware('throttle:300,1','guest')->group(function () {         
     Route::view('register', 'auth.register')->name('register');
     Route::post('/register', [AuthController::class, 'register'])->name('register.s');
     Route::view('login', 'auth.login')->name('login');
     Route::post('/login', [AuthController::class, 'login'])->name('loginsubmit');
-});
+   });
+   Route::view('forgetPassword', 'auth.forgetPassword')->name('forgetPasswordForm');
+   Route::post('/forgetPassword', [AuthController::class, 'forgetPassword'])->name('forgetPassword');
+
 
 Route::middleware('auth')->group(function () {
     Route::get('/change-password', [AuthController::class, 'showChangePasswordForm'])->name('change_password.form');
     Route::post('/change-password', [AuthController::class, 'changePassword'])->name('change_password');
+   
     Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
+    
 });
 
 
