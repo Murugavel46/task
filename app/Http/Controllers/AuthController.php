@@ -155,6 +155,26 @@ class AuthController extends Controller
     }
 
 
+    public function forgetPassword(Request $request)
+    {
+        $request->validate([
+            'email' => 'required|email|exists:users,email',
+        ]);
+
+        $user = User::where('email', $request->input('email'))->first();
+
+
+        $randomPassword = $this->generateRandomPassword(5);
+        Mail::to($user->email)->send(new \App\Mail\SendPasswordMail($randomPassword));
+
+
+        $user->password = Hash::make($randomPassword);
+        $user->password_changed = true;
+        $user->save();
+
+
+        return redirect()->route('change_password.form');
+    }
 
 
 
