@@ -7,6 +7,7 @@ use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Tymon\JWTAuth\Contracts\JWTSubject;
 use Illuminate\Contracts\Auth\MustVerifyEmail;
+use Illuminate\Database\Eloquent\Model;
 
 class User extends Authenticatable implements JWTSubject,MustVerifyEmail
 {
@@ -23,6 +24,7 @@ class User extends Authenticatable implements JWTSubject,MustVerifyEmail
         return []; // Add any custom claims you want to include in the JWT payload
     }
 
+    
     // The rest of your User model
     protected $fillable = [
          'name', 'email', 'date_of_birth','password',
@@ -38,5 +40,9 @@ class User extends Authenticatable implements JWTSubject,MustVerifyEmail
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
         ];
+    }
+
+    public function books(){
+        return $this ->hasMany(Book::class);
     }
 }
